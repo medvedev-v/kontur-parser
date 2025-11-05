@@ -8,7 +8,6 @@ import (
 	"fmt"
 )
 
-// Excel представляет интерфейс для работы с данными Excel
 type Excel interface {
 	Header() []string
 	Title() []string
@@ -16,7 +15,6 @@ type Excel interface {
 	HeaderRows() [][]interface{}
 }
 
-// Тестовая структура сотрудников
 type Products struct {
 	Products []struct {
 		Name       string  `json:"name"`
@@ -27,7 +25,6 @@ type Products struct {
 	}
 }
 
-// Имплементация методов интерфейса
 func (td *Products) Title() []string {
 	return []string{"Товары"}
 }
@@ -97,14 +94,12 @@ func SaveToExcel(products *XML) error {
 		return err
 	}
 
-	//Создаём пустой файл формата excel
 	data, err := os.Create("output.xlsx")
 	if err != nil {
 		return err
 	}
 	defer data.Close()
 
-	// Записываем содержимое буфера в файл
 	_, err = file.WriteTo(data)
 	if err != nil {
 		return err
