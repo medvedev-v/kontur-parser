@@ -1,11 +1,14 @@
+// file: excel.go
 package xmlconverter
 
 import (
 	"bytes"
-	"github.com/xuri/excelize/v2"
-	"strconv"
-	"os"
 	"fmt"
+	"os"
+	"strconv"
+
+	config "github.com/medvedev-v/kontur-parser/pkg/config"
+	"github.com/xuri/excelize/v2"
 )
 
 type Excel interface {
@@ -73,7 +76,7 @@ func SaveToExcel(products *XML) error {
 			}
 		}
 
-		Products := struct {
+		productData := struct {
 			Name       string  `json:"name"`
 			Price      float64 `json:"price"`
 			Count      float64 `json:"count"`
@@ -86,7 +89,7 @@ func SaveToExcel(products *XML) error {
 			Code:       productCode,
 			ShtrihCode: productShtrihCode,
 		}
-		excelData.Products = append(excelData.Products, Products)
+		excelData.Products = append(excelData.Products, productData)
 	}
 
 	file, err := ExcelGenerator(&excelData)
@@ -109,7 +112,7 @@ func SaveToExcel(products *XML) error {
 }
 
 func ExcelGenerator(data Excel) (*bytes.Buffer, error) {
-	//Создаём новый файл
+	// Создаём новый файл
 	file := excelize.NewFile()
 	// Название листа
 	sheetName := "Sheet1"
@@ -161,13 +164,17 @@ func ExcelGenerator(data Excel) (*bytes.Buffer, error) {
 	}
 
 	// Запись файла в буфер
-	f, _ := file.WriteToBuffer()
+	buf, err := file.WriteToBuffer()
+	if err != nil {
+		return nil, err
+	}
 
-	// Запись файла на диск (опционально)
-	if err := file.SaveAs("output.xlsx"); err != nil {
+	// Запись файла на диск
+	cfg := config.GetConfig()
+	if err := file.SaveAs(cfg.DefaultOutputFilename); err != nil {
 		fmt.Println(err)
 	}
 
 	// Возвращаем буфер и ошибку (если есть)
-	return f, nil
+	return buf, nil
 }
