@@ -164,9 +164,53 @@ func LoadFromFileWithSupplier(filename string, supplier string) (*XML, error) {
         parser = &DefaultXMLParser{}
     case "яшкино", "yashkino":
         parser = &YashkinoXMLParser{}
+	case "ИЛС", "ILS", "илс":
+        parser = &ILSXMLParser{}	
     default:
         return nil, fmt.Errorf("поставщик '%s' не поддерживается", supplier)
     }
     
     return parser.Parse(data)
+}
+
+// Структура для ИЛС XML
+type ILSXMLParser struct {
+	XMLName xml.Name `xml:"xml"`
+	Text    string   `xml:",chardata"`
+	СведТов []struct {
+		Text        string `xml:",chardata"`
+		НомСтр      string `xml:"НомСтр,attr"`
+		НаимТов     string `xml:"НаимТов,attr"`
+		ОКЕИТов     string `xml:"ОКЕИ_Тов,attr"`
+		КолТов      float64 `xml:"КолТов,attr"`
+		ЦенаТов     string `xml:"ЦенаТов,attr"`
+		СтТовБезНДС string `xml:"СтТовБезНДС,attr"`
+		НалСт       string `xml:"НалСт,attr"`
+		СтТовУчНал  float64 `xml:"СтТовУчНал,attr"`
+		НаимЕдИзм   string `xml:"НаимЕдИзм,attr"`
+		ДопСведТов  struct {
+			Text        string `xml:",chardata"`
+			ПрТовРаб    string `xml:"ПрТовРаб,attr"`
+			КодТов      string `xml:"КодТов,attr"`
+			КолВедМарк string `xml:"КолВедМарк,attr"`
+		} `xml:"ДопСведТов"`
+		Акциз struct {
+			Text     string `xml:",chardata"`
+			БезАкциз string `xml:"БезАкциз"`
+		} `xml:"Акциз"`
+		СумНал struct {
+			Text   string `xml:",chardata"`
+			СумНал string `xml:"СумНал"`
+		} `xml:"СумНал"`
+	} `xml:"СведТов"`
+}
+
+// Parse реализация метода Parse для ILS XML
+func (p *ILSXMLParser) Parse(xmlData []byte) (*XML, error) {
+    var products XML
+    err := xml.Unmarshal(xmlData, &products)
+    if err != nil {
+        return nil, err
+    }
+    return &products, nil
 }
